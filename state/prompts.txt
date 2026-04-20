@@ -1,0 +1,13 @@
+Extract medical entities from the report:
+
+- Medications (name + purpose if mentioned)
+- Conditions (disease names + brief explanation if mentioned)
+- Lab values (test name + value if present + meaning if mentioned)
+
+Rules:
+- Only extract information present in the text
+- Do not guess or hallucinate
+- If any field is missing, return null
+
+Medical Report:
+{input_text}
