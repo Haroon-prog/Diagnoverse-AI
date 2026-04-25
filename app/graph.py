@@ -23,8 +23,8 @@ print(workflow)
 final_state = workflow.invoke(
     {
     "input_type": "pdf",
-    'input_data': 'data/sample_pdf2.pdf',
-    'file_name': 'sample_pdf2'}
+    'input_data': 'input_data/medical_report.pdf',
+    'file_name': 'medical_report'}
     )
 
 print(final_state,end="\n\n\n\t\n")
@@ -32,4 +32,11 @@ print(final_state['extracted_text'],end="\n\n\n\t\n")
 print(final_state['medications'],end="\n\n\n\t\n")
 print(final_state['conditions'],end="\n\n\n\t\n")
 print(final_state['lab_values'],end="\n\n\n\t\n")
+
+print(f"---------------rag-context-------------\n{final_state['rag_context']}\n\n\n")
+print("---------------end of rag-context-------------\n\n\n")
+
+print (f"complete final state : \n\n\n{final_state}")
+
+
 

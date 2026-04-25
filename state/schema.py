@@ -3,29 +3,29 @@ from typing import List, Optional
 
 
 class Medication(BaseModel):
-    name: str = Field(description="Name of the medicine")
+    name: Optional[str] =  Field(default=" ", description="Name of the medicine")
     description: Optional[str] = Field(
-        default=None,
+        default= " ",
         description="What the medicine is used for"
     )
 
 
 class Condition(BaseModel):
-    name: str = Field(description="Name of the condition or disease")
+    name: str = Field(default=" ",description="Name of the condition or disease")
     description: Optional[str] = Field(
-        default=None,
+        default= " ",
         description="Short explanation of the condition"
     )
 
 
 class LabValue(BaseModel):
-    name: str = Field(description="Name of the lab test")
+    name: str = Field(default=" ", description="Name of the lab test")
     value: Optional[str] = Field(
-        default=None,
+        default= " ",
         description="Value of the lab test if present"
     )
     description: Optional[str] = Field(
-        default=None,
+        default= " ",
         description="What this lab test indicates"
     )
 
