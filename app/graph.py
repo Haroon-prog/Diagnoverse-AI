@@ -2,16 +2,19 @@
 
 from langgraph.graph import StateGraph,START,END
 from agents.extraction_agent import extraction_agent
+from agents.query_gen_agent import query_generator_agent
 from state.state import AgentState
 
 graph = StateGraph(AgentState)
 
 # add node 
 graph.add_node('extraction_agent',extraction_agent)
+graph.add_node('query_generator_agent',query_generator_agent)
 
 # add edge
 graph.add_edge(START,'extraction_agent') 
-graph.add_edge('extraction_agent',END) 
+graph.add_edge('extraction_agent','query_generator_agent')
+graph.add_edge('query_generator_agent',END) 
 
 # compile
 workflow = graph.compile()
@@ -23,8 +26,8 @@ print(workflow)
 final_state = workflow.invoke(
     {
     "input_type": "pdf",
-    'input_data': 'input_data/medical_report.pdf',
-    'file_name': 'medical_report'}
+    'input_data': 'input_data/part2.pdf',
+    'file_name': 'part2'}
     )
 
 print(final_state,end="\n\n\n\t\n")
@@ -36,7 +39,10 @@ print(final_state['lab_values'],end="\n\n\n\t\n")
 print(f"---------------rag-context-------------\n{final_state['rag_context']}\n\n\n")
 print("---------------end of rag-context-------------\n\n\n")
 
-print (f"complete final state : \n\n\n{final_state}")
+print (f"complete final state : \n\n\n{final_state}\n\n\t\n")
+
+
+print(f" ----- IMPORTANT QUESTIONS TO ASK -------\n\n\n\t\t\n{final_state['doctor_questions']} ")
 
 
 

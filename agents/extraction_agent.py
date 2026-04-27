@@ -146,7 +146,7 @@ llm = ChatGroq(model="llama-3.1-8b-instant")
 # model_with_schema = model.with_structured_output(MedicalEntities)
 
 
-
+vector_store = load_vector_store()
 
 #   ------------ EXTRACTION AGENT -----------------------
 
@@ -211,7 +211,6 @@ def extraction_agent(state: AgentState) -> AgentState:
     state["conditions"] = unique(all_conditions)
     state["lab_values"] = unique(all_lab_values)
 
-    vector_store = load_vector_store()
     rag_context = get_rag_context(state, vector_store)
 
     state["rag_context"] = rag_context
