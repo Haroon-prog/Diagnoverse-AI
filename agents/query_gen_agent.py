@@ -15,7 +15,7 @@ def parse_list(text):
                 pass
     return []
 
-llm = ChatGroq(model="llama-3.1-8b-instant")
+llm = ChatGroq(model="llama-3.1-8b-instant")    
 
 
 def query_generator_agent(state:AgentState ) -> AgentState:

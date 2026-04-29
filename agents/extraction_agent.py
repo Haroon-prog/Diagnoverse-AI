@@ -184,7 +184,7 @@ def extraction_agent(state: AgentState) -> AgentState:
         {{
         "medications": [{{"name": "", "description": ""}}],
         "conditions": [{{"name": "", "description": ""}}],
-        "lab_values": [{{"name": "", "value": "", "description": ""}}]
+        "lab_values": [{{"name": "", "value": "", ref range: "", description": ""}}]
         }}
 
         Rules:
@@ -193,6 +193,11 @@ def extraction_agent(state: AgentState) -> AgentState:
         - If none exist, return []
         - Use "" for missing fields
         - No extra text
+       Lab values:
+        - Extract test name, RESULT value, and meaning if present
+        - value must be the actual result (e.g., "0.7 mg/dl")
+        - DO NOT use reference ranges (e.g., "0.66 - 1.25") for value 
+        - add ref range from reference range column
 
         Medical Report:
         {chunk}
