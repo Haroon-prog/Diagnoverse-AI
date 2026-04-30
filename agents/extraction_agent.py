@@ -211,8 +211,14 @@ def extraction_agent(state: AgentState) -> AgentState:
         all_conditions.extend(data.get("conditions", []))
         all_lab_values.extend(data.get("lab_values", []))
 
-    # 3. remove duplicates
-    state["medications"] = unique(all_medications)
+    # 3. remove duplicates and add to state 
+    meds = state.get("medications", [])
+
+    if meds and any(m.get("name") for m in meds):
+        state["medications"] = meds
+    else:
+        state["medications"] = unique(all_medications)
+
     state["conditions"] = unique(all_conditions)
     state["lab_values"] = unique(all_lab_values)
 
@@ -220,7 +226,10 @@ def extraction_agent(state: AgentState) -> AgentState:
 
     state["rag_context"] = rag_context
 
-    
+    # ✅ initialize defaults
+    state.setdefault("side_effects", [])
+    state.setdefault("drug_warnings", [])
+    state.setdefault("drug_interactions", [])
 
 
     return state
