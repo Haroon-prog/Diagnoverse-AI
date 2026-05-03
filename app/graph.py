@@ -36,40 +36,35 @@ graph.add_edge('summary_agent',END)
 # compile
 workflow = graph.compile()
 
-print(workflow)
+# print(workflow)
 
-# print(type(extraction_agent))
+# # print(type(extraction_agent))
 
-final_state = workflow.invoke(
-    {
-    "input_type": "pdf",
-    'input_data': 'input_data/sample_pdf2.pdf',
-    'file_name': 'sample_pdf2',
-    
-    "medications": [
-        {"name": "Crocin"},
-        {"name": "Metformin"},
-        {"name": "Telma-AM"}
-    ]}
-    )
+# final_state = workflow.invoke(
+#     {
+#     "input_type": "pdf",
+#     'input_data': 'input_data/sample_pdf2.pdf',
+#     'file_name': 'sample_pdf2',
+#     }
+#     )
 
-print(final_state,end="\n\n\n\t\n")
-print(final_state['extracted_text'],end="\n\n\n\t\n")
-print(final_state['medications'],end="\n\n\n\t\n")
-print(final_state['conditions'],end="\n\n\n\t\n")
-print(final_state['lab_values'],end="\n\n\n\t\n")
+# print(final_state,end="\n\n\n\t\n")
+# print(final_state['extracted_text'],end="\n\n\n\t\n")
+# print(final_state['medications'],end="\n\n\n\t\n")
+# print(final_state['conditions'],end="\n\n\n\t\n")
+# print(final_state['lab_values'],end="\n\n\n\t\n")
 
-print(f"---------------rag-context-------------\n{final_state['rag_context']}\n\n\n")
-print("---------------end of rag-context-------------\n\n\n")
+# print(f"---------------rag-context-------------\n{final_state['rag_context']}\n\n\n")
+# print("---------------end of rag-context-------------\n\n\n")
 
-print (f"complete final state : \n\n\n{final_state}\n\n\t\n")
+# print (f"complete final state : \n\n\n{final_state}\n\n\t\n")
 
 
-print(f" ----- IMPORTANT QUESTIONS TO ASK -------\n\n\n\t\t\n{final_state['doctor_questions']} ")
+# print(f" ----- IMPORTANT QUESTIONS TO ASK -------\n\n\n\t\t\n{final_state['doctor_questions']} ")
 
-print(f"------ SUMMARY ---------\n\n\n\t{final_state['summary']}")
+# print(f"------ SUMMARY ---------\n\n\n\t{final_state['summary']}")
 
-print(f"-------------drug checker values \n\n\n\n\t{final_state['side_effects']},{final_state['drug_warnings']},{final_state['drug_interactions']}")
+# print(f"-------------drug checker values \n\n\n\n\t{final_state['side_effects']},{final_state['drug_warnings']},{final_state['drug_interactions']}")
 
 
 

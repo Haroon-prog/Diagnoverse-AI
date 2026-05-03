@@ -3,6 +3,7 @@ langchain
 langchain-core
 langchain-community
 langgraph
+dotenv
 
 # Google Gemini (PaLM) Integration
 langchain-google-genai
@@ -24,6 +25,8 @@ sentence-transformers
 python-dotenv
 
 streamlit
+torch
+torchvision
 
 #vector store
 langchain-chroma

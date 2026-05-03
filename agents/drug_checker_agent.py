@@ -144,6 +144,8 @@ def unique_list(items):
 def trim_text(text, max_chars=800):
     return text[:max_chars]
 
+def safe_join(items):
+    return " ".join(str(i) for i in items if i)
 
 
 # ------------ DRUG AGENT --------------
@@ -178,11 +180,15 @@ def drug_checker_agent(state: AgentState) -> AgentState:
         # Step 2: try openFDA
         data = fetch_from_openfda(generic_name)
 
-        raw_side = trim_text(" ".join(data.get("side_effects", [])))
-        raw_warn = trim_text(" ".join(data.get("drug_warnings", [])))
-        raw_inter = trim_text(" ".join(data.get("drug_interactions", [])))
+        # 🔥 FIX
+        if not isinstance(data, dict):
+            data = {}
 
         if data and any(data.values()):
+            raw_side = trim_text(safe_join(data.get("side_effects", [])))
+            raw_warn = trim_text(safe_join(data.get("drug_warnings", [])))
+            raw_inter = trim_text(safe_join(data.get("drug_interactions", [])))
+
             cleaned = clean_with_llm({
                 "side_effects": raw_side,
                 "drug_warnings": raw_warn,

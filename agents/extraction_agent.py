@@ -151,15 +151,19 @@ vector_store = load_vector_store()
 #   ------------ EXTRACTION AGENT -----------------------
 
 def extraction_agent(state: AgentState) -> AgentState:
-    if state["input_type"] == "pdf":
-        if isinstance(state["input_data"], str):
-            file_path = state["input_data"]
+    input_data = state["input_data"]
+
+    # 🔥 handle both cases properly
+    if isinstance(input_data, str):
+        # already a file path
+        file_path = input_data
     else:
-        file_path = save_temp_file(state["input_data"])
+        # uploaded file → save it
+        file_path = save_temp_file(input_data)
 
     text = extract_text(file_path)
 
-    state['extracted_text'] = text
+    state["extracted_text"] = text
 
     # cleaned text
     cleaned_text = clean_text(text)
