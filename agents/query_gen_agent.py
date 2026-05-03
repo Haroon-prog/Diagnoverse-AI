@@ -18,8 +18,12 @@ def parse_list(text):
 llm = ChatGroq(model="llama-3.1-8b-instant")    
 
 
-def query_generator_agent(state:AgentState ) -> AgentState:
-    prompt = """ You are a helpful medical assistant.
+def query_generator_agent(state: AgentState) -> AgentState:
+    conditions = state.get("conditions", [])
+    lab_values = state.get("lab_values", [])
+    rag_context = state.get("rag_context", "")
+
+    prompt = f"""You are a helpful medical assistant.
 
     Based on the patient's medical report, generate 5 to 7 simple and important questions the patient should ask their doctor.
 
@@ -35,11 +39,11 @@ def query_generator_agent(state:AgentState ) -> AgentState:
     - Do NOT give answers, only questions
 
     Patient Data:
-    Conditions: {state["conditions"]}
-    Lab Values: {state["lab_values"]}
+    Conditions: {conditions}
+    Lab Values: {lab_values}
 
     Additional Context:
-    {state["rag_context"]}
+    {rag_context}
 
     Return ONLY a JSON list of questions like:
     ["question 1", "question 2"]

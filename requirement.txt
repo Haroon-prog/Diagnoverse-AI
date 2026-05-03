@@ -34,3 +34,6 @@ langchain-chroma
 # for search
 duckduckgo-search
 ddgs
+
+# PDF export
+fpdf2
