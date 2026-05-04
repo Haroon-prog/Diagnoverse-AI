@@ -72,9 +72,10 @@ def unique(items):
 # complete_text = extract_text("../data/sample_pdf2.pdf")
 
 def clean_text(text):
-    # text = text.replace("\n"," ")
-    text = " ".join(text.split())  #removes extra spaces
-    return text 
+    # Preserve newlines to maintain line-by-line tabular structure for the LLM
+    lines = text.split('\n')
+    cleaned_lines = [" ".join(line.split()) for line in lines if line.strip()]
+    return "\n".join(cleaned_lines) 
 
 # cleaned_text = clean_text(complete_text)
 # print(complete_text,end="\n\n\n\t\n\n")
@@ -188,7 +189,7 @@ def extraction_agent(state: AgentState) -> AgentState:
         {{
         "medications": [{{"name": "", "description": ""}}],
         "conditions": [{{"name": "", "description": ""}}],
-        "lab_values": [{{"name": "", "value": "", ref range: "", description": ""}}]
+        "lab_values": [{{"name": "", "value": "", "ref_range": "", "description": ""}}]
         }}
 
         Rules:
@@ -197,11 +198,14 @@ def extraction_agent(state: AgentState) -> AgentState:
         - If none exist, return []
         - Use "" for missing fields
         - No extra text
-       Lab values:
-        - Extract test name, RESULT value, and meaning if present
-        - value must be the actual result (e.g., "0.7 mg/dl")
-        - DO NOT use reference ranges (e.g., "0.66 - 1.25") for value 
-        - add ref range from reference range column
+        
+        Lab values STRICT EXTRACTION RULES:
+        - Extract lab values STRICTLY line-by-line.
+        - Each test name MUST be paired ONLY with a value from the SAME LINE.
+        - Do NOT use values from nearby lines or from other tests.
+        - `value` must be the actual patient result (e.g., "142 pg/ml").
+        - `ref_range` must be the reference range (e.g., "211.00 - 946.00").
+        - NEVER put the reference range into the `value` field.
 
         Medical Report:
         {chunk}
