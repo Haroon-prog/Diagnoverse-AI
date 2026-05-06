@@ -19,11 +19,11 @@ model = ChatGroq(model="llama-3.1-8b-instant")
 
 llm_structured = model.with_structured_output(DrugInfo)
 
-def check_medics(state : AgentState) -> Literal["query_generator_agent","drug_checker_agent"]:
+def check_medics(state : AgentState) -> Literal["skip","drug_checker_agent"]:
     if state['medications'] is not None and len(state['medications']) > 0:
         return "drug_checker_agent"
     else:
-        return "query_generator_agent"
+        return "skip"
     
 
 def normalize_drug_name(med_name:str):

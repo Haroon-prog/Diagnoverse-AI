@@ -19,19 +19,23 @@ graph.add_node('drug_checker_agent',drug_checker_agent)
 # add edge
 graph.add_edge(START,'extraction_agent') 
 
+# Fan out to run these agents in parallel
+graph.add_edge('extraction_agent', 'summary_agent')
+graph.add_edge('extraction_agent', 'query_generator_agent')
+
 graph.add_conditional_edges(
     'extraction_agent',
     check_medics,
     {
         "drug_checker_agent": "drug_checker_agent",
-        "query_generator_agent": "query_generator_agent"
+        "skip": END # End this branch if no medications
     }
 )
 
-graph.add_edge('drug_checker_agent','query_generator_agent')
-# graph.add_edge('extraction_agent','query_generator_agent')
-graph.add_edge('query_generator_agent','summary_agent')
-graph.add_edge('summary_agent',END) 
+# All parallel branches route to END
+graph.add_edge('drug_checker_agent', END)
+graph.add_edge('query_generator_agent', END)
+graph.add_edge('summary_agent', END) 
 
 # compile
 workflow = graph.compile()

@@ -53,7 +53,7 @@ def summary_agent(state: AgentState) -> AgentState:
     {state.get('conditions', [])}
 
     Lab Values:
-    {lab_values}
+    {lab_values[:12]}
 
     RAG Context:
     {state.get('rag_context', '')}

@@ -2,6 +2,8 @@ HbA1c measures average blood sugar over 3 months. Values above 6.5% indicate dia
 
 Triglycerides above 500 mg/dL are considered very high and increase risk of heart disease.
 
+Platelets help blood clotting. Low platelet count may increase bleeding risk.
+
 Cholesterol is a fatty substance in blood. High levels increase risk of heart disease.
 
 HDL cholesterol is good cholesterol. Low levels increase risk.
