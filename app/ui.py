@@ -233,7 +233,11 @@ def render_chatbot():
                             sys_prompt += f"The user has uploaded a medical report. Summary: {overview}. Base your answers on this context if relevant."
                     
                     msgs_for_llm = [("system", sys_prompt)]
-                    for m in st.session_state["messages"]:
+
+                    # only recent memory
+                    recent_messages = st.session_state["messages"][-8:]
+
+                    for m in recent_messages:
                         msgs_for_llm.append((m["role"], m["content"]))
                         
                     response = chat_llm.invoke(msgs_for_llm)
@@ -262,11 +266,15 @@ if st.session_state["result"] is not None:
     meds = result.get("medications", [])
     has_meds = len(meds) > 0 and any(m.get("name") for m in meds)
     
-    # Setup tabs based on whether medications exist
-    tab_titles = ["📋 Summary", "❓ Doctor Questions", "💬 Chat AI", "🔬 Extracted Data"]
-    if has_meds:
-        tab_titles.insert(1, "💊 Drug Insights")
-        
+    # Define tabs
+    tab_titles = [
+        "📋 Summary",
+        "🧪 Lab Results",
+        "💬 Chat AI",
+        "💊 Drug Insights",
+        "❓ Doctor Questions",
+        "🔬 Extracted Data"
+    ]
     tabs = st.tabs(tab_titles)
     
     # ── TAB 1: Summary ──
@@ -302,8 +310,10 @@ if st.session_state["result"] is not None:
                     st.error(w)
             else:
                 st.info("No major warnings detected.")
-                
-        st.markdown("#### 🧪 Lab Results")
+
+    # ── TAB 2: Lab Results ──
+    with tabs[1]:
+        st.markdown("### 🧪 Lab Results")
         lab_data = summary.get("lab_table", [])
         if lab_data:
             # Render custom HTML table for lab data
@@ -320,14 +330,16 @@ if st.session_state["result"] is not None:
             html_table += "</table>"
             st.markdown(f'<div class="glass-card">{html_table}</div>', unsafe_allow_html=True)
         else:
-            st.write("No lab results found in the report.")
+            st.info("No lab results found in the report.")
 
-    # ── TAB 2: Drug Insights (Conditional) ──
-    tab_idx = 1
-    if has_meds:
-        with tabs[tab_idx]:
-            st.markdown("### 💊 Medication Analysis")
-            
+    # ── TAB 3: Chat AI ──
+    with tabs[2]:
+        render_chatbot()
+
+    # ── TAB 4: Drug Insights ──
+    with tabs[3]:
+        st.markdown("### 💊 Medication Analysis")
+        if has_meds:
             med_names = [m.get("name") for m in meds if m.get("name")]
             st.markdown(f"**Detected Medications:** {', '.join(med_names)}")
             
@@ -364,10 +376,11 @@ if st.session_state["result"] is not None:
                 else:
                     st.write("None listed.")
                 st.markdown("</div>", unsafe_allow_html=True)
-        tab_idx += 1
+        else:
+            st.info("No medications found in the report.")
 
-    # ── TAB 3: Doctor Questions ──
-    with tabs[tab_idx]:
+    # ── TAB 5: Doctor Questions ──
+    with tabs[4]:
         st.markdown("### ❓ Questions for Your Doctor")
         st.write("Here are some personalized questions you might want to ask your doctor during your next visit:")
         
@@ -379,15 +392,9 @@ if st.session_state["result"] is not None:
             st.markdown("</div>", unsafe_allow_html=True)
         else:
             st.info("No questions generated.")
-    tab_idx += 1
 
-    # ── TAB 4: Chat AI ──
-    with tabs[tab_idx]:
-        render_chatbot()
-    tab_idx += 1
-
-    # ── TAB 5: Extracted Data ──
-    with tabs[tab_idx]:
+    # ── TAB 6: Extracted Data ──
+    with tabs[5]:
         st.markdown("### 🔬 Raw Extracted Data")
         with st.expander("View Conditions"):
             st.json(result.get("conditions", []))
