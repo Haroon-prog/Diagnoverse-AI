@@ -26,8 +26,8 @@ def extract_text(file_path):
 
 def split_text(text):
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1200,      # size of each chunk
-        chunk_overlap=150     # overlap for better context
+        chunk_size=2000,      # size of each chunk
+        chunk_overlap=200     # overlap for better context
     )
     return splitter.split_text(text)
 

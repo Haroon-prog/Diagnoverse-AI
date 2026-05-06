@@ -76,7 +76,7 @@ def summary_agent(state: AgentState) -> AgentState:
     Rules:
     - Use very simple everyday language
     - Explain conditions in 1 short phrase if needed, No medical jargon 
-    - For `status` in `lab_table`:
+    - STRICTLY for `status` in `lab_table`:
         1. First, use the `ref_range` provided in the Lab Values.
         2. If missing, use the RAG Context.
         3. If still missing, use the Web Search Context provided.

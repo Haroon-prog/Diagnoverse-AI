@@ -4,6 +4,7 @@ import sys
 import os
 import tempfile
 import json
+from langchain_groq import ChatGroq
 
 # Fix import paths to allow importing from agents, state, etc.
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -198,6 +199,49 @@ if uploaded_file:
                 status.update(label="❌ Error during analysis", state="error", expanded=True)
                 st.error(f"An error occurred: {str(e)}")
 
+# ── Chatbot Helper ─────────────────────────────────────────────────────────────
+chat_llm = ChatGroq(model="llama-3.1-8b-instant")
+def render_chatbot():
+    st.markdown("### 💬 Chat with Diagnoverse AI")
+    st.write("Ask follow-up questions about your report or general health.")
+    
+    if "messages" not in st.session_state:
+        st.session_state["messages"] = [
+            {"role": "assistant", "content": "Hello! I am Diagnoverse AI. How can I help you understand your medical report today?"}
+        ]
+        
+    # Display chat messages
+    for msg in st.session_state["messages"]:
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
+            
+    # Chat input
+    if prompt := st.chat_input("Ask a question..."):
+        with st.chat_message("user"):
+            st.markdown(prompt)
+        st.session_state["messages"].append({"role": "user", "content": prompt})
+        
+        with st.chat_message("assistant"):
+            with st.spinner("Thinking..."):
+                try:
+                    
+                    # Build context
+                    sys_prompt = "You are a helpful medical AI assistant named Diagnoverse AI. "
+                    if st.session_state.get("result"):
+                        overview = st.session_state.get("result", {}).get("summary", {}).get("overview", "")
+                        if overview:
+                            sys_prompt += f"The user has uploaded a medical report. Summary: {overview}. Base your answers on this context if relevant."
+                    
+                    msgs_for_llm = [("system", sys_prompt)]
+                    for m in st.session_state["messages"]:
+                        msgs_for_llm.append((m["role"], m["content"]))
+                        
+                    response = chat_llm.invoke(msgs_for_llm)
+                    st.markdown(response.content)
+                    st.session_state["messages"].append({"role": "assistant", "content": response.content})
+                except Exception as e:
+                    st.error(f"Error communicating with AI: {e}")
+
 # ── Results Dashboard ──────────────────────────────────────────────────────────
 if st.session_state["result"] is not None:
     st.markdown("---")
@@ -219,7 +263,7 @@ if st.session_state["result"] is not None:
     has_meds = len(meds) > 0 and any(m.get("name") for m in meds)
     
     # Setup tabs based on whether medications exist
-    tab_titles = ["📋 Summary", "❓ Doctor Questions", "🔬 Extracted Data"]
+    tab_titles = ["📋 Summary", "❓ Doctor Questions", "💬 Chat AI", "🔬 Extracted Data"]
     if has_meds:
         tab_titles.insert(1, "💊 Drug Insights")
         
@@ -337,7 +381,12 @@ if st.session_state["result"] is not None:
             st.info("No questions generated.")
     tab_idx += 1
 
-    # ── TAB 4: Extracted Data ──
+    # ── TAB 4: Chat AI ──
+    with tabs[tab_idx]:
+        render_chatbot()
+    tab_idx += 1
+
+    # ── TAB 5: Extracted Data ──
     with tabs[tab_idx]:
         st.markdown("### 🔬 Raw Extracted Data")
         with st.expander("View Conditions"):
