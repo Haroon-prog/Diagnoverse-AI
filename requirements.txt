@@ -33,3 +33,5 @@ ddgs
 
 # PDF export
 fpdf2
+
+protobuf==3.20.3
