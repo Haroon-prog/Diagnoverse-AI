@@ -1,3 +1,4 @@
+# from matplotlib.pyplot import colorbar
 from sympy import false
 import streamlit as st
 import sys
@@ -11,98 +12,154 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from app.graph import workflow
 from app.pdf_export import generate_pdf
+import base64
 
 # ── Page Configuration ─────────────────────────────────────────────────────────
-st.set_page_config(page_title="Diagnoverse", page_icon="🧬", layout="wide")
+icon_path = os.path.join(os.path.dirname(__file__), "..", "images", "diagnoverse_white.png")
+try:
+    from PIL import Image
+    page_icon = Image.open(icon_path)
+except Exception:
+    page_icon = icon_path
 
-# ── Custom CSS for Premium Dark Glassmorphism ────────────────────────────────
-st.markdown("""
+st.set_page_config(page_title="Diagnoverse AI", page_icon=page_icon, layout="wide", initial_sidebar_state="collapsed")
+
+# ── Custom CSS for Premium Dark Glassmorphism & Animations ──────────────────
+custom_css = """
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;600&display=swap');
+
     /* Global Background */
     .stApp {
-        background-color: #0a0e1a;
+        background-color: #0b0f19;
+        background-image: 
+            radial-gradient(circle at 15% 50%, rgba(0, 212, 170, 0.05), transparent 25%),
+            radial-gradient(circle at 85% 30%, rgba(130, 100, 235, 0.05), transparent 25%);
         color: #f0f2f8;
         font-family: 'Inter', sans-serif;
     }
     
     /* Headers & Text */
-    h1, h2, h3, h4, p, span {
+    h1, h2, h3, h4, p, span, li {
         color: #f0f2f8 !important;
+        font-family: 'Outfit', sans-serif;
+    }
+    p, span, li {
+        font-family: 'Inter', sans-serif;
     }
     
-    /* Main Title Gradient */
-    .gradient-text {
-        background: linear-gradient(90deg, #00d4aa 0%, #8264eb 100%);
+    /* Hero Section */
+    .hero-container {
+        text-align: center;
+        padding: 4rem 2rem 2rem 2rem;
+        animation: fadeIn 1s ease-in-out;
+    }
+    
+    .hero-title {
+        background: linear-gradient(135deg, #00d4aa 0%, #00b38f 50%, #8264eb 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        font-size: 3rem;
+        font-size: 4.5rem;
         font-weight: 800;
-        margin-bottom: 0.2rem;
+        margin-bottom: 0.5rem;
+        letter-spacing: -1px;
+        line-height: 1.1;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.5rem;
+        color: #a0aec0 !important;
+        font-weight: 300;
+        margin-bottom: 2rem;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
     }
     
     /* Cards (Glassmorphism) */
     .glass-card {
-        background: rgba(40, 48, 70, 0.4);
+        background: rgba(25, 30, 45, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 20px;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .glass-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px 0 rgba(0, 212, 170, 0.1);
         border: 1px solid rgba(0, 212, 170, 0.2);
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 15px;
-        backdrop-filter: blur(10px);
     }
     
     /* Alert styling */
     .stAlert {
-        background: rgba(40, 48, 70, 0.4) !important;
-        border: 1px solid rgba(255, 107, 107, 0.4) !important;
+        background: rgba(25, 30, 45, 0.6) !important;
+        border: 1px solid rgba(0, 212, 170, 0.3) !important;
+        border-radius: 12px !important;
         color: #f0f2f8 !important;
+        backdrop-filter: blur(10px);
     }
     
-    /* Button Styling */
+    /* Primary Analyze Button Styling */
     .stButton>button {
-        background: linear-gradient(90deg, #00d4aa 0%, #00b38f 100%);
-        color: #0a0e1a !important;
+        background: linear-gradient(135deg, #00d4aa 0%, #009688 100%);
+        color: #ffffff !important;
         border: none;
-        border-radius: 8px;
+        border-radius: 12px;
         font-weight: 600;
-        padding: 0.5rem 1rem;
+        padding: 0.75rem 1.5rem;
         transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 212, 170, 0.3);
     }
     .stButton>button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 212, 170, 0.4);
+        box-shadow: 0 6px 20px rgba(0, 212, 170, 0.5);
     }
     
-    /* Download Button */
+    /* Prominent PDF Download Button */
     .stDownloadButton>button {
-        background: linear-gradient(90deg, #8264eb 0%, #684ac9 100%);
+        background: linear-gradient(135deg, #8264eb 0%, #5e35b1 100%);
         color: white !important;
         border: none;
-        border-radius: 8px;
-        font-weight: 600;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        padding: 1rem;
         width: 100%;
         margin-top: 10px;
+        box-shadow: 0 4px 15px rgba(130, 100, 235, 0.4);
+        transition: all 0.3s ease;
     }
     .stDownloadButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(130, 100, 235, 0.4);
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 8px 25px rgba(130, 100, 235, 0.6);
     }
     
     /* Tabs styling */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
+        gap: 10px;
         background-color: transparent;
     }
     .stTabs [data-baseweb="tab"] {
-        height: 50px;
-        background-color: rgba(40, 48, 70, 0.4);
-        border-radius: 8px 8px 0px 0px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        height: 55px;
+        background-color: rgba(25, 30, 45, 0.6);
+        border-radius: 12px 12px 0px 0px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
         border-bottom: none;
-        padding: 10px 20px;
+        padding: 10px 24px;
+        font-weight: 500;
+        font-family: 'Outfit', sans-serif;
+        color: #a0aec0 !important;
     }
     .stTabs [aria-selected="true"] {
         background-color: rgba(0, 212, 170, 0.1);
-        border-top: 2px solid #00d4aa;
+        border-top: 3px solid #00d4aa;
+        color: #00d4aa !important;
     }
     
     /* Table Styling */
@@ -110,182 +167,285 @@ st.markdown("""
         width: 100%;
         color: #f0f2f8;
         border-collapse: collapse;
+        margin-top: 10px;
     }
     th {
         background-color: rgba(0, 212, 170, 0.1);
         text-align: left;
-        padding: 12px;
+        padding: 14px;
         color: #00d4aa !important;
+        font-weight: 600;
+        font-family: 'Outfit', sans-serif;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
     }
     td {
-        padding: 12px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 14px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    tr:hover td {
+        background-color: rgba(255, 255, 255, 0.02);
     }
     
     /* Status pills */
-    .status-normal { color: #48c78e; font-weight: 600; }
-    .status-high { color: #ff6b6b; font-weight: 600; }
-    .status-low { color: #ffa726; font-weight: 600; }
+    .status-normal { color: #48c78e; font-weight: 700; background: rgba(72, 199, 142, 0.1); padding: 4px 8px; border-radius: 12px;}
+    .status-high { color: #ff6b6b; font-weight: 700; background: rgba(255, 107, 107, 0.1); padding: 4px 8px; border-radius: 12px;}
+    .status-low { color: #ffa726; font-weight: 700; background: rgba(255, 167, 38, 0.1); padding: 4px 8px; border-radius: 12px;}
+    
+    /* File Uploader override */
+    [data-testid="stFileUploadDropzone"] {
+        background-color: rgba(25, 30, 45, 0.6) !important;
+        border: 2px dashed rgba(0, 212, 170, 0.3) !important;
+        border-radius: 16px !important;
+        transition: all 0.3s ease;
+    }
+    [data-testid="stFileUploadDropzone"]:hover {
+        border-color: #00d4aa !important;
+        background-color: rgba(0, 212, 170, 0.05) !important;
+    }
+
+    /* Chatbot Floating Button (Targeting specific key if possible, else we rely on columns) */
+    .st-key-chat_toggle_btn {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 9999;
+    }
+    .st-key-chat_toggle_btn button {
+        width: 65px;
+        height: 65px;
+        border-radius: 50% !important;
+        padding: 0 !important;
+        font-size: 24px;
+        box-shadow: 0 8px 25px rgba(0, 212, 170, 0.5) !important;
+    }
+    
+    /* Chatbot Window Container */
+    .st-key-chat_window_container {
+        position: fixed;
+        bottom: 110px;
+        right: 30px;
+        width: 380px;
+        max-width: 90vw;
+        height: 500px;
+        z-index: 9998;
+        background: rgba(15, 20, 30, 0.95);
+        border: 1px solid rgba(0, 212, 170, 0.3);
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        padding: 15px;
+        overflow-y: auto;
+        animation: slideUp 0.3s ease-out;
+    }
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 </style>
-""", unsafe_allow_html=True)
+"""
 
-# ── Header ─────────────────────────────────────────────────────────────────────
-st.markdown('<div class="gradient-text">DIAGNOVERSE</div>', unsafe_allow_html=True)
-st.markdown("### AI-Powered Medical Report Intelligence")
-st.write("Upload a medical report PDF to extract key findings, analyze lab results, review medication interactions, and generate questions for your doctor.")
+# Inject CSS
+st.markdown(custom_css, unsafe_allow_html=True)
 
-st.warning("⚠️ **Disclaimer:** Diagnoverse is an AI-powered experimental tool intended for informational purposes only. It can make mistakes and should not be trusted blindly. This tool is not a substitute for professional medical advice, diagnosis, or treatment. Always consult with your doctor or a qualified healthcare provider regarding any medical conditions.")
+# ── Inject Chatbot Button Icon via Base64 ──────────────────────────────────────
+try:
+    chatbot_icon_path = os.path.join(os.path.dirname(__file__), "..", "images", "chatbot_white.png")
+    with open(chatbot_icon_path, 'rb') as f:
+        chatbot_b64 = base64.b64encode(f.read()).decode()
+    st.markdown(f"""
+    <style>
+        .st-key-chat_toggle_btn button {{
+            font-size: 0px !important;
+            color: transparent !important;
+            background-image: url("data:image/png;base64,{chatbot_b64}");
+            background-size: 55%;
+            background-repeat: no-repeat;
+            background-position: center;
+        }}
+    </style>
+    """, unsafe_allow_html=True)
+except Exception as e:
+    pass
 
-st.markdown("---")
-
-# ── Upload Zone ────────────────────────────────────────────────────────────────
-uploaded_file = st.file_uploader("📄 Upload your medical report (PDF)", type=["pdf"])
-
+# ── Session State Initialization ───────────────────────────────────────────────
 if "result" not in st.session_state:
     st.session_state["result"] = None
 if "pdf_bytes" not in st.session_state:
     st.session_state["pdf_bytes"] = None
+if "chat_open" not in st.session_state:
+    st.session_state["chat_open"] = False
+if "messages" not in st.session_state:
+    st.session_state["messages"] = [
+        {"role": "assistant", "content": "Hello! I am Diagnoverse AI. How can I help you understand your medical report today?"}
+    ]
 
-if uploaded_file:
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        st.info(f"File ready: **{uploaded_file.name}** ({uploaded_file.size / 1024:.1f} KB)")
-    with col2:
-        analyze_btn = st.button("🚀 Analyze Report", use_container_width=True)
+# ── Hero Section ───────────────────────────────────────────────────────────────
+try:
+    diagnoverse_icon_path = os.path.join(os.path.dirname(__file__), "..", "images", "diagnoverse_white.png")
+    with open(diagnoverse_icon_path, 'rb') as f:
+        diag_b64 = base64.b64encode(f.read()).decode()
+    hero_title_html = f'<img src="data:image/png;base64,{diag_b64}" width="70" style="vertical-align: middle; margin-right: 15px; margin-bottom: 15px;">DIAGNOVERSE AI'
+except Exception:
+    hero_title_html = "DIAGNOVERSE AI"
 
-    if analyze_btn:
-        with st.status("🧠 Processing Medical Report...", expanded=True) as status:
-            st.write("🔍 Extracting text and medical entities...")
-            
-            try:
-                # Save to temp file
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-                    tmp.write(uploaded_file.getvalue())
-                    temp_path = tmp.name
-                
-                # Invoke workflow
-                st.write("⚙️ Running Agent Pipeline...")
-                result = workflow.invoke({
-                    "input_type": "pdf",
-                    "input_data": temp_path,
-                    "file_name": uploaded_file.name
-                })
-                
-                # We can deduce steps based on output
-                if result.get("medications"):
-                    st.write("💊 Medications detected. Analyzing side effects and interactions...")
-                else:
-                    st.write("⏩ No medications found. Skipping drug checks.")
-                
-                st.write("❓ Generating personalized questions for your doctor...")
-                st.write("📋 Summarizing clinical findings...")
-                
-                st.session_state["result"] = result
-                
-                # Generate PDF immediately so it's ready
-                st.write("📄 Generating downloadable PDF report...")
-                pdf_bytes = generate_pdf(result, uploaded_file.name)
-                st.session_state["pdf_bytes"] = pdf_bytes
-                
-                status.update(label="✅ Analysis Complete!", state="complete", expanded=False)
-                
-                # Clean up temp file
-                try:
-                    os.unlink(temp_path)
-                except Exception:
-                    pass
-                
-            except Exception as e:
-                status.update(label="❌ Error during analysis", state="error", expanded=True)
-                st.error(f"An error occurred: {str(e)}")
+st.markdown(f"""
+<div class="hero-container">
+    <div class="hero-title">{hero_title_html}</div>
+    <div class="hero-subtitle">Transforming Medical Reports into Intelligent Insights</div>
+</div>
+""", unsafe_allow_html=True)
 
-# ── Chatbot Helper ─────────────────────────────────────────────────────────────
-chat_llm = ChatGroq(model="llama-3.1-8b-instant")
-def render_chatbot():
-    st.markdown("### 💬 Chat with Diagnoverse AI")
-    st.write("Ask follow-up questions about your report or general health.")
+# ── Upload Zone ────────────────────────────────────────────────────────────────
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    uploaded_file = st.file_uploader("📄 Upload your medical report (PDF)", type=["pdf"], label_visibility="collapsed")
     
-    if "messages" not in st.session_state:
-        st.session_state["messages"] = [
-            {"role": "assistant", "content": "Hello! I am Diagnoverse AI. How can I help you understand your medical report today?"}
-        ]
-        
-    # Display chat messages
-    for msg in st.session_state["messages"]:
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
-            
-    # Chat input
-    if prompt := st.chat_input("Ask a question..."):
-        with st.chat_message("user"):
-            st.markdown(prompt)
-        st.session_state["messages"].append({"role": "user", "content": prompt})
-        
-        with st.chat_message("assistant"):
-            with st.spinner("Thinking..."):
+    if uploaded_file:
+        st.info(f"✨ File ready: **{uploaded_file.name}** ({uploaded_file.size / 1024:.1f} KB)")
+        analyze_btn = st.button("Analyze Report", use_container_width=True)
+
+        if analyze_btn:
+            with st.status("🧠 Processing Medical Report...", expanded=True) as status:
+                st.write("🔍 Extracting text and medical entities...")
+                
                 try:
+                    # Save to temp file
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+                        tmp.write(uploaded_file.getvalue())
+                        temp_path = tmp.name
                     
-                    # Build context
-                    sys_prompt = "You are a helpful medical AI assistant named Diagnoverse AI. "
-                    if st.session_state.get("result"):
-                        overview = st.session_state.get("result", {}).get("summary", {}).get("overview", "")
-                        if overview:
-                            sys_prompt += f"The user has uploaded a medical report. Summary: {overview}. Base your answers on this context if relevant."
+                    # Invoke workflow
+                    st.write("⚙️ Running Agent Pipeline...")
+                    result = workflow.invoke({
+                        "input_type": "pdf",
+                        "input_data": temp_path,
+                        "file_name": uploaded_file.name
+                    })
                     
-                    msgs_for_llm = [("system", sys_prompt)]
-
-                    # only recent memory
-                    recent_messages = st.session_state["messages"][-8:]
-
-                    for m in recent_messages:
-                        msgs_for_llm.append((m["role"], m["content"]))
-                        
-                    response = chat_llm.invoke(msgs_for_llm)
-                    st.markdown(response.content)
-                    st.session_state["messages"].append({"role": "assistant", "content": response.content})
+                    # We can deduce steps based on output
+                    if result.get("medications"):
+                        st.write("💊 Medications detected. Analyzing side effects and interactions...")
+                    else:
+                        st.write("⏩ No medications found. Skipping drug checks.")
+                    
+                    st.write("❓ Generating personalized questions for your doctor...")
+                    st.write("📋 Summarizing clinical findings...")
+                    
+                    st.session_state["result"] = result
+                    
+                    # Generate PDF immediately so it's ready
+                    st.write("📄 Generating downloadable PDF report...")
+                    pdf_bytes = generate_pdf(result, uploaded_file.name)
+                    st.session_state["pdf_bytes"] = pdf_bytes
+                    
+                    status.update(label="✅ Analysis Complete!", state="complete", expanded=False)
+                    
+                    # Clean up temp file
+                    try:
+                        os.unlink(temp_path)
+                    except Exception:
+                        pass
+                    
                 except Exception as e:
-                    st.error(f"Error communicating with AI: {e}")
+                    status.update(label="❌ Error during analysis", state="error", expanded=True)
+                    st.error(f"An error occurred: {str(e)}")
+
+# ── Floating Chatbot Helper ────────────────────────────────────────────────────
+chat_llm = ChatGroq(model="llama-3.1-8b-instant")
+
+# Chat Toggle Button
+if st.button(" ", key="chat_toggle_btn", help="Toggle AI Assistant"):
+    st.session_state["chat_open"] = not st.session_state["chat_open"]
+
+# Render Chat Window if open
+if st.session_state["chat_open"]:
+    with st.container(key="chat_window_container"):
+        st.markdown("<h4 style='text-align: center; color: #00d4aa; margin-top: 0;'>Ask Diagnoverse AI</h4>", unsafe_allow_html=True)
+        st.markdown("<hr style='margin: 10px 0; border-color: rgba(255,255,255,0.1);'>", unsafe_allow_html=True)
+        
+        # Display chat messages
+        chat_history_container = st.container(height=350, border=False)
+        with chat_history_container:
+            for msg in st.session_state["messages"]:
+                with st.chat_message(msg["role"]):
+                    st.markdown(msg["content"])
+                
+        # Chat input at the bottom of the container
+        if prompt := st.chat_input("Type your medical query...", key="floating_chat_input"):
+            st.session_state["messages"].append({"role": "user", "content": prompt})
+            
+            with chat_history_container:
+                with st.chat_message("user"):
+                    st.markdown(prompt)
+                
+                with st.chat_message("assistant"):
+                    with st.spinner("Thinking..."):
+                        try:
+                            # Build context
+                            sys_prompt = "You are a helpful medical AI assistant named Diagnoverse AI. Keep your answers concise, empathetic, and professional. "
+                            if st.session_state.get("result"):
+                                overview = st.session_state.get("result", {}).get("summary", {}).get("overview", "")
+                                if overview:
+                                    sys_prompt += f"The user has uploaded a medical report. Summary: {overview}. Base your answers on this context if relevant."
+                            
+                            msgs_for_llm = [("system", sys_prompt)]
+
+                            # only recent memory
+                            recent_messages = st.session_state["messages"][-8:]
+
+                            for m in recent_messages:
+                                msgs_for_llm.append((m["role"], m["content"]))
+                                
+                            response = chat_llm.invoke(msgs_for_llm)
+                            st.markdown(response.content)
+                            st.session_state["messages"].append({"role": "assistant", "content": response.content})
+                        except Exception as e:
+                            st.error(f"Error communicating with AI: {e}")
 
 # ── Results Dashboard ──────────────────────────────────────────────────────────
 if st.session_state["result"] is not None:
-    st.markdown("---")
-    
-    # ── Prominent Download Button ──
-    if st.session_state["pdf_bytes"] is not None:
-        st.download_button(
-            label="📥 Download Full PDF Report",
-            data=st.session_state["pdf_bytes"],
-            file_name=f"Diagnoverse_Report_{uploaded_file.name}",
-            mime="application/pdf",
-            use_container_width=True
-        )
-        st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<br><br>", unsafe_allow_html=True)
     
     result = st.session_state["result"]
     summary = result.get("summary", {})
     meds = result.get("medications", [])
     has_meds = len(meds) > 0 and any(m.get("name") for m in meds)
     
+    # ── Prominent Download Button ──
+    if st.session_state["pdf_bytes"] is not None:
+        dl_col1, dl_col2, dl_col3 = st.columns([1, 2, 1])
+        with dl_col2:
+            st.download_button(
+                label="📄 DOWNLOAD PREMIUM PDF REPORT",
+                data=st.session_state["pdf_bytes"],
+                file_name=f"Diagnoverse_Report_{uploaded_file.name}",
+                mime="application/pdf",
+                use_container_width=True
+            )
+        st.markdown("<br>", unsafe_allow_html=True)
+    
     # Define tabs
     tab_titles = [
-        "📋 Summary",
+        "📋 Overview & Findings",
         "🧪 Lab Results",
-        "💬 Chat AI",
         "💊 Drug Insights",
-        "❓ Doctor Questions",
-        "🔬 Extracted Data"
+        "❓ Questions For Doctor",
+        "🔬 Raw Data"
     ]
     tabs = st.tabs(tab_titles)
     
-    # ── TAB 1: Summary ──
+    # ── TAB 1: Overview & Findings ──
     with tabs[0]:
-        st.markdown("### 📋 Executive Summary")
+        st.markdown("<br>", unsafe_allow_html=True)
         overview = summary.get("overview", "No overview available.")
-        st.markdown(f'<div class="glass-card">{overview}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="glass-card"><h4>Executive Summary</h4><p>{overview}</p></div>', unsafe_allow_html=True)
         
         col1, col2 = st.columns([1, 1])
         
         with col1:
+            st.markdown('<div class="glass-card">', unsafe_allow_html=True)
             st.markdown("#### 🔍 Key Findings")
             findings = summary.get("key_findings", [])
             if findings:
@@ -293,7 +453,9 @@ if st.session_state["result"] is not None:
                     st.markdown(f"- {f}")
             else:
                 st.write("No specific key findings extracted.")
+            st.markdown('</div>', unsafe_allow_html=True)
                 
+            st.markdown('<div class="glass-card">', unsafe_allow_html=True)
             st.markdown("#### ✅ Recommendations")
             recs = summary.get("recommendations", [])
             if recs:
@@ -301,8 +463,10 @@ if st.session_state["result"] is not None:
                     st.markdown(f"- {r}")
             else:
                 st.write("No specific recommendations provided.")
+            st.markdown('</div>', unsafe_allow_html=True)
                 
         with col2:
+            st.markdown('<div class="glass-card">', unsafe_allow_html=True)
             st.markdown("#### ⚠️ Warnings")
             warnings = summary.get("warnings", [])
             if warnings:
@@ -310,14 +474,14 @@ if st.session_state["result"] is not None:
                     st.error(w)
             else:
                 st.info("No major warnings detected.")
+            st.markdown('</div>', unsafe_allow_html=True)
 
     # ── TAB 2: Lab Results ──
     with tabs[1]:
-        st.markdown("### 🧪 Lab Results")
+        st.markdown("<br>", unsafe_allow_html=True)
         lab_data = summary.get("lab_table", [])
         if lab_data:
-            # Render custom HTML table for lab data
-            html_table = "<table><tr><th>Test</th><th>Value</th><th>Status</th></tr>"
+            html_table = "<table><tr><th>Test Name</th><th>Value</th><th>Status</th></tr>"
             for row in lab_data:
                 status = str(row.get("status", "")).strip().upper()
                 status_class = "status-normal"
@@ -326,19 +490,15 @@ if st.session_state["result"] is not None:
                 elif status == "LOW":
                     status_class = "status-low"
                     
-                html_table += f"<tr><td>{row.get('test', '')}</td><td>{row.get('value', '')}</td><td class='{status_class}'>{row.get('status', '')}</td></tr>"
+                html_table += f"<tr><td>{row.get('test', '')}</td><td>{row.get('value', '')}</td><td><span class='{status_class}'>{row.get('status', '')}</span></td></tr>"
             html_table += "</table>"
             st.markdown(f'<div class="glass-card">{html_table}</div>', unsafe_allow_html=True)
         else:
             st.info("No lab results found in the report.")
 
-    # ── TAB 3: Chat AI ──
+    # ── TAB 3: Drug Insights ──
     with tabs[2]:
-        render_chatbot()
-
-    # ── TAB 4: Drug Insights ──
-    with tabs[3]:
-        st.markdown("### 💊 Medication Analysis")
+        st.markdown("<br>", unsafe_allow_html=True)
         if has_meds:
             med_names = [m.get("name") for m in meds if m.get("name")]
             st.markdown(f"**Detected Medications:** {', '.join(med_names)}")
@@ -379,9 +539,9 @@ if st.session_state["result"] is not None:
         else:
             st.info("No medications found in the report.")
 
-    # ── TAB 5: Doctor Questions ──
-    with tabs[4]:
-        st.markdown("### ❓ Questions for Your Doctor")
+    # ── TAB 4: Doctor Questions ──
+    with tabs[3]:
+        st.markdown("<br>", unsafe_allow_html=True)
         st.write("Here are some personalized questions you might want to ask your doctor during your next visit:")
         
         questions = result.get("doctor_questions", [])
@@ -393,12 +553,14 @@ if st.session_state["result"] is not None:
         else:
             st.info("No questions generated.")
 
-    # ── TAB 6: Extracted Data ──
-    with tabs[5]:
-        st.markdown("### 🔬 Raw Extracted Data")
-        with st.expander("View Conditions"):
+    # ── TAB 5: Raw Data ──
+    with tabs[4]:
+        st.markdown("<br>", unsafe_allow_html=True)
+        with st.expander("View Extracted Conditions"):
             st.json(result.get("conditions", []))
-        with st.expander("View Medications"):
+        with st.expander("View Extracted Medications"):
             st.json(result.get("medications", []))
-        with st.expander("View Lab Values"):
+        with st.expander("View Raw Lab Values"):
             st.json(result.get("lab_values", []))
+
+st.markdown("<br><br><br><br><br>", unsafe_allow_html=True) # Bottom padding for floating chat
