@@ -94,7 +94,7 @@ def load_vector_store():
     embedding = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
     vector_store = Chroma(
-        persist_directory="vector_store",
+        persist_directory="./vector_store",
         embedding_function=embedding,
         collection_name="medical_knowledge"
     )

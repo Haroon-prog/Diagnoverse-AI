@@ -3,10 +3,6 @@ langchain
 langchain-core
 langchain-community
 langgraph
-dotenv
-
-# Google Gemini (PaLM) Integration
-langchain-google-genai
 
 # groq Integration
 langchain-groq
@@ -15,11 +11,11 @@ langchain-groq
 langchain-huggingface
 huggingface-hub
 transformers
+sentence-transformers
 
 #document loader
 pymupdf
 
-sentence-transformers
 
 # Environment Variable Management 
 python-dotenv

@@ -50,6 +50,8 @@ data/*.jpg
 # Vector DB / embeddings
 # ------------------------------
 vector_store/
+vector_store/
+agents/vector_store/
 chroma_db/
 
 # ------------------------------
@@ -69,3 +71,7 @@ chroma_db/
 build/
 dist/
 *.egg-info/
+
+# Uploaded/generated files
+uploads/
+exports/
