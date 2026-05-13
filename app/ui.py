@@ -243,6 +243,68 @@ custom_css = """
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
     }
+    
+    /* Hero Logo Standard Size */
+    .hero-logo {
+        width: 70px;
+        vertical-align: middle;
+        margin-right: 15px;
+        margin-bottom: 15px;
+    }
+
+    /* ── Responsive Design for Mobile ── */
+    @media (max-width: 768px) {
+        .hero-container {
+            padding: 2rem 1rem 1rem 1rem;
+        }
+        .hero-title {
+            font-size: 2.2rem;
+            line-height: 1.2;
+        }
+        .hero-logo {
+            width: 45px;
+            margin-right: 10px;
+            margin-bottom: 8px;
+        }
+        .hero-subtitle {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+        .glass-card {
+            padding: 16px;
+        }
+        
+        /* Chatbot adjustments */
+        .st-key-chat_toggle_btn {
+            bottom: 20px;
+            right: 20px;
+        }
+        .st-key-chat_toggle_btn button {
+            width: 55px;
+            height: 55px;
+        }
+        .st-key-chat_window_container {
+            width: 90vw;
+            height: 450px;
+            bottom: 90px;
+            right: 5vw;
+        }
+        
+        /* Tables & Tabs */
+        .stTabs [data-baseweb="tab"] {
+            padding: 10px 12px;
+            font-size: 0.9rem;
+        }
+        th, td {
+            padding: 10px;
+            font-size: 0.9rem;
+        }
+        
+        /* Upload box */
+        [data-testid="stFileUploadDropzone"] {
+            padding: 1rem !important;
+        }
+    }
 </style>
 """
 
@@ -286,7 +348,7 @@ try:
     diagnoverse_icon_path = os.path.join(os.path.dirname(__file__), "..", "images", "diagnoverse_white.png")
     with open(diagnoverse_icon_path, 'rb') as f:
         diag_b64 = base64.b64encode(f.read()).decode()
-    hero_title_html = f'<img src="data:image/png;base64,{diag_b64}" width="70" style="vertical-align: middle; margin-right: 15px; margin-bottom: 15px;">DIAGNOVERSE AI'
+    hero_title_html = f'<img class="hero-logo" src="data:image/png;base64,{diag_b64}">DIAGNOVERSE AI'
 except Exception:
     hero_title_html = "DIAGNOVERSE AI"
 
